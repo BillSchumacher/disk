@@ -84,10 +84,7 @@ class DummyPool:
 class PoseQuality:
     def __init__(self, ransac=Ransac(), dummy_pool=False, n_proc=6):
         self.ransac = ransac
-        if dummy_pool:
-            self.pool = DummyPool()
-        else:
-            self.pool = mp.Pool(processes=n_proc)
+        self.pool = DummyPool() if dummy_pool else mp.Pool(processes=n_proc)
 
     def __call__(
         self,

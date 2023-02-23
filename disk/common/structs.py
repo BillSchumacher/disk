@@ -6,7 +6,7 @@ from torch_dimcheck import dimchecked
 # def my_function(args) -> NpArray[OutputType]
 if sys.version_info >= (3, 7):
     class NpArray:
-        def __class_getitem__(self, arg):
+        def __class_getitem__(cls, arg):
             pass
 else:
     # 3.6 and below don't support __class_getitem__

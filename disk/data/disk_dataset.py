@@ -80,14 +80,10 @@ class ImageSet:
                                 f"{rooted_path}")
 
             return rooted_path
-                
+
         self.image_path = maybe_add_root(json_data['image_path'])
         self.calib_path = maybe_add_root(json_data['calib_path'])
-        if no_depth:
-            self.depth_path = None
-        else:
-            self.depth_path = maybe_add_root(json_data['depth_path'])
-
+        self.depth_path = None if no_depth else maybe_add_root(json_data['depth_path'])
         self.id2name    = json_data['images']
         self.crop_size  = crop_size
 
@@ -95,7 +91,7 @@ class ImageSet:
         if self.depth_path is None:
             return None
 
-        h5_name = _base_image_name(image_name) + '.h5'
+        h5_name = f'{_base_image_name(image_name)}.h5'
         depth_path = P.join(self.depth_path, h5_name)
         return _read_depth(depth_path)
 
@@ -104,7 +100,7 @@ class ImageSet:
 
     def _get_bitmap_path(self, image_name):
         base_name = _base_image_name(image_name)
-        return P.join(self.image_path, base_name + '.jpg')
+        return P.join(self.image_path, f'{base_name}.jpg')
 
     def _get_KRT(self, image_name):
         calibration_path = P.join(self.calib_path,
@@ -158,15 +154,10 @@ class DISKDataset(LimitedConcatDataset):
             json_data = json.load(json_file)
 
         root_path, _ = P.split(json_path)
-        scene_datasets = []        
-        for scene in json_data:
-            scene_datasets.append(SceneTuples(
-                json_data[scene],
-                crop_size,
-                root_path,
-                no_depth=no_depth
-            ))
-
+        scene_datasets = [
+            SceneTuples(json_data[scene], crop_size, root_path, no_depth=no_depth)
+            for scene in json_data
+        ]
         super(DISKDataset, self).__init__(
             scene_datasets,
             limit=limit,

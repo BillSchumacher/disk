@@ -26,7 +26,4 @@ def nms(signal: ['B', 'H', 'W'], window_size=5, cutoff=0.) -> ['B', 'H', 'W']:
     coords = torch.arange(h * w, device=signal.device).reshape(1, h, w)
     nms = ixs == coords
 
-    if cutoff is None:
-        return nms
-    else:
-        return nms & (signal > cutoff)
+    return nms if cutoff is None else nms & (signal > cutoff)

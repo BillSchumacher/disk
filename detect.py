@@ -12,10 +12,7 @@ class Image:
     def __init__(self, bitmap: ['C', 'H', 'W'], fname: str, orig_shape=None):
         self.bitmap     = bitmap
         self.fname      = fname
-        if orig_shape is None:
-            self.orig_shape = self.bitmap.shape[1:]
-        else:
-            self.orig_shape = orig_shape
+        self.orig_shape = self.bitmap.shape[1:] if orig_shape is None else orig_shape
 
     def resize_to(self, shape):
         return Image(
@@ -32,7 +29,7 @@ class Image:
         h, w = self.orig_shape
         x, y = scaled
 
-        mask = (0 <= x) & (x < w) & (0 <= y) & (y < h)
+        mask = (x >= 0) & (x < w) & (y >= 0) & (y < h)
 
         return scaled, mask
 
@@ -139,17 +136,16 @@ def extract(dataset, save_path):
             try:
                 batched_features = extract(bitmaps)
             except RuntimeError as e:
-                if 'U-Net failed' in str(e):
-                    msg = ('Please use input size which is multiple of 16 (or '
-                           'adjust the --height and --width flags to let this '
-                           'script rescale it automatically). This is because '
-                           'we internally use a U-Net with 4 downsampling '
-                           'steps, each by a factor of 2, therefore 2^4=16.')
-
-                    raise RuntimeError(msg) from e
-                else:
+                if 'U-Net failed' not in str(e):
                     raise
 
+                msg = ('Please use input size which is multiple of 16 (or '
+                       'adjust the --height and --width flags to let this '
+                       'script rescale it automatically). This is because '
+                       'we internally use a U-Net with 4 downsampling '
+                       'steps, each by a factor of 2, therefore 2^4=16.')
+
+                raise RuntimeError(msg) from e
         for features, image in zip(batched_features.flat, images):
             features = features.to(CPU)
 
@@ -186,7 +182,7 @@ if __name__ == '__main__':
         "in `image-path` directory. Images are resized to `--height` x `--width` "
         "for internal processing (padding them if necessary) and the output "
         "coordinates are then transformed back to original image size."),
-    
+
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
@@ -219,14 +215,16 @@ if __name__ == '__main__':
         help=('Whether to extract features using the non-maxima suppresion mode or '
               'through training-time grid sampling technique')
     )
-    
-    default_model_path = os.path.split(os.path.abspath(__file__))[0] + '/depth-save.pth'
+
+    default_model_path = (
+        f'{os.path.split(os.path.abspath(__file__))[0]}/depth-save.pth'
+    )
     parser.add_argument(
          '--model_path', type=str, default=default_model_path,
         help="Path to the model's .pth save file"
     )
     parser.add_argument('--detection-scores', action='store_true')
-    
+
     parser.add_argument(
         'h5_path',
         help=("Directory where keypoints.h5 and descriptors.h5 will be stored. This"
@@ -240,9 +238,9 @@ if __name__ == '__main__':
     DEV   = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     CPU   = torch.device('cpu')
     dataset = SceneDataset(args.image_path, crop_size=(args.height, args.width))
-    
+
     state_dict = torch.load(args.model_path, map_location='cpu')
-    
+
     # compatibility with older model saves which used the 'extractor' name
     if 'extractor' in state_dict:
         weights = state_dict['extractor']
@@ -253,5 +251,5 @@ if __name__ == '__main__':
     model = DISK(window=8, desc_dim=args.desc_dim)
     model.load_state_dict(weights)
     model = model.to(DEV)
-    
+
     described_samples = extract(dataset, args.h5_path)

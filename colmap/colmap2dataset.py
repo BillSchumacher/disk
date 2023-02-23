@@ -96,10 +96,9 @@ def encode_pairs(pairs):
         for name in pair:
             if name in name2id:
                 continue
-            else:
-                name2id[name] = curr_id
-                id2name.append(name)
-                curr_id += 1
+            name2id[name] = curr_id
+            id2name.append(name)
+            curr_id += 1
 
     pairs_as_ixs = []
     for pair in pairs:

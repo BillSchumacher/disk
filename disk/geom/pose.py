@@ -130,7 +130,4 @@ def matrix_to_quaternion(M: [3, 3]) -> [4]:
 
     q = torch.from_numpy(q)
 
-    if q[0] > 0.0:
-        return q
-    else:
-        return -q
+    return q if q[0] > 0.0 else -q

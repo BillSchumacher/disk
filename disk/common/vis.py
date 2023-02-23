@@ -48,10 +48,7 @@ class MultiFigure:
             self._ax.set_yticks(np.arange(0, ymax, grid))
             self._ax.grid()
 
-        if vertical:
-            self.offset = torch.tensor([0, h])
-        else:
-            self.offset = torch.tensor([w, 0])
+        self.offset = torch.tensor([0, h]) if vertical else torch.tensor([w, 0])
 
     @dimchecked
     def mark_xy(
@@ -69,10 +66,9 @@ class MultiFigure:
 
         xys = torch.stack([xy1.T, xy2.T], dim=1)
 
-        if plot_n is not None:
-            if xys.shape[0] > plot_n:
-                ixs = torch.linspace(0, xys.shape[0]-1, plot_n).to(torch.int64)
-                xys = xys[ixs, :]
+        if plot_n is not None and xys.shape[0] > plot_n:
+            ixs = torch.linspace(0, xys.shape[0]-1, plot_n).to(torch.int64)
+            xys = xys[ixs, :]
 
         if lines:
             if color is not None:
@@ -98,5 +94,5 @@ class MultiFigure:
                 edgecolor='black',
                 s=marker_size,
             )
-    
+
         return plot
