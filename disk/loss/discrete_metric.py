@@ -74,16 +74,14 @@ class DiscreteMetric(torch.nn.Module):
         prec   = n_good / (n_pairs + 1)
 
         reward = self.lm_tp * n_good  + \
-                 self.lm_fp * n_bad   + \
-                 self.lm_kp * n_kps
+                     self.lm_fp * n_bad   + \
+                     self.lm_kp * n_kps
 
-        stats = {
-            'n_kps'    : n_kps,
-            'n_pairs'  : n_pairs,
-            'tp'       : n_good,
-            'fp'       : n_bad,
-            'reward'   : reward,
+        return {
+            'n_kps': n_kps,
+            'n_pairs': n_pairs,
+            'tp': n_good,
+            'fp': n_bad,
+            'reward': reward,
             'precision': prec,
         }
-
-        return stats

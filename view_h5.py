@@ -49,7 +49,7 @@ def view_keypoints(h5_path, image_path):
     for filename in tqdm(list(keypoint_f.keys())):
         keypoints = keypoint_f[filename][()]
 
-        fname_with_ext = filename + '.' + args.image_extension
+        fname_with_ext = f'{filename}.{args.image_extension}'
         path = os.path.join(image_path, fname_with_ext)
         if not os.path.isfile(path):
             raise IOError(f'Invalid image path {path}')
@@ -66,7 +66,7 @@ def view_keypoints(h5_path, image_path):
 def view_matches(h5_path, image_path):
     keypoint_f = h5py.File(os.path.join(h5_path, 'keypoints.h5'), 'r')
     match_file = h5py.File(os.path.join(h5_path, 'matches.h5'), 'r')
-    
+
     added = set()
 
     for key_1 in match_file.keys():
@@ -75,8 +75,8 @@ def view_matches(h5_path, image_path):
             kp_1 = keypoint_f[key_1][()]
             kp_2 = keypoint_f[key_2][()]
 
-            path_1 = os.path.join(image_path, key_1 + '.' + args.image_extension)
-            path_2 = os.path.join(image_path, key_2 + '.' + args.image_extension)
+            path_1 = os.path.join(image_path, f'{key_1}.{args.image_extension}')
+            path_2 = os.path.join(image_path, f'{key_2}.{args.image_extension}')
 
             bm_1 = torch.from_numpy(imageio.imread(path_1))
             bm_2 = torch.from_numpy(imageio.imread(path_2))

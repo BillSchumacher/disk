@@ -13,11 +13,11 @@ def read_deltas(path):
     for serialized_event in tqdm(reader):
         event = event_pb2.Event.FromString(serialized_event.numpy())
         for value in event.summary.value:
-            if value.tag == 'test/pose/Δ_θ':
-                Δ_θ.append(value.simple_value)
             if value.tag == 'test/pose/Δ_T':
                 Δ_T.append(value.simple_value)
 
+            elif value.tag == 'test/pose/Δ_θ':
+                Δ_θ.append(value.simple_value)
     Δ_θ = np.array(Δ_θ)
     Δ_T = np.array(Δ_T)
 
@@ -37,7 +37,7 @@ def calculate_auc(Δ_θ, Δ_T, length):
     # bins for 0..10 degrees of error
     bins = np.arange(0, 11)
     aucs = []
-    for e, errs in enumerate(error):
+    for errs in error:
         hist, _edges = np.histogram(errs, bins=bins)
         hist = hist / length
         auc = hist.cumsum().mean()

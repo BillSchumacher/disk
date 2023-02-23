@@ -22,14 +22,13 @@ def get_focal(image_path, err_on_default=False):
 
         if focal_35mm is not None:
             focal = focal_35mm / 35. * max_size
-    
+
     if focal is None:
         if err_on_default:
             raise RuntimeError("Failed to find focal length")
 
-        # failed to find it in exif, use prior
-        FOCAL_PRIOR = 1.2
-        focal = FOCAL_PRIOR * max_size
+        else:
+            focal = 1.2 * max_size
 
     return focal
 

@@ -83,13 +83,9 @@ class Image:
             [0, 0, 1]
         ], dtype=self.K.dtype, device=self.K.device)
         K = K_scaler @ self.K
- 
-        bitmap = _rescale(self.bitmap, new_size)
-        if self.depth is not None:
-            depth = _rescale(self.depth, new_size)
-        else:
-            depth = None
 
+        bitmap = _rescale(self.bitmap, new_size)
+        depth = _rescale(self.depth, new_size) if self.depth is not None else None
         return Image(K, self.R, self.T, bitmap, depth, self.bitmap_path)
 
     def pad(self, size):
@@ -125,9 +121,7 @@ class Image:
         ], dim=0)
 
         xyz = (self.K_inv @ xyw) * depth
-        xyz_w = self.R.T @ (xyz - self.T[:, None])
-
-        return xyz_w
+        return self.R.T @ (xyz - self.T[:, None])
 
     @dimchecked
     def project(self, xyw: [3, 'N']) -> [2, 'N']:
@@ -140,12 +134,12 @@ class Image:
         h, w = self.shape
         x, y = xy
 
-        return (0 <= x) & (x < w) & (0 <= y) & (y < h)
+        return (x >= 0) & (x < w) & (y >= 0) & (y < h)
 
     @dimchecked
     def fetch_depth(self, xy: [2, 'N']) -> ['N']:
         if self.depth is None:
-            raise ValueError(f'Depth is not loaded')
+            raise ValueError('Depth is not loaded')
 
         in_range = self.in_range_mask(xy)
         finite = torch.isfinite(xy).all(dim=0)
